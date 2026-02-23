@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:lottie/lottie.dart';
-import 'package:animations/animations.dart';
-import 'dart:math';
-
 import 'package:aura_music_player/audio_handler.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
@@ -48,11 +44,17 @@ class MusicPlayerScreen extends StatefulWidget {
   State<MusicPlayerScreen> createState() => _MusicPlayerScreenState();
 }
 
-class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTickerProviderStateMixin {
+class _MusicPlayerScreenState extends State<MusicPlayerScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   Color _backgroundColor = Colors.black;
   final List<Color> _backgroundColors = [
-    Colors.red, Colors.blue, Colors.green, Colors.purple, Colors.orange, Colors.teal
+    Colors.red,
+    Colors.blue,
+    Colors.green,
+    Colors.purple,
+    Colors.orange,
+    Colors.teal
   ];
   int _currentColorIndex = 0;
   final OnAudioQuery _audioQuery = OnAudioQuery();
@@ -62,8 +64,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 10));
-    audioPlayer.playerStateStream.map((state) => state.playing).distinct().listen((playing) {
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(seconds: 10));
+    audioPlayer.playerStateStream
+        .map((state) => state.playing)
+        .distinct()
+        .listen((playing) {
       if (playing) {
         _controller.repeat();
       } else {
@@ -73,7 +79,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
     audioPlayer.positionStream.listen((position) {
       if (position.inSeconds % 5 == 0 && position.inSeconds != 0) {
         setState(() {
-          _currentColorIndex = (_currentColorIndex + 1) % _backgroundColors.length;
+          _currentColorIndex =
+              (_currentColorIndex + 1) % _backgroundColors.length;
           _backgroundColor = _backgroundColors[_currentColorIndex];
         });
       }
@@ -83,7 +90,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
 
   Future<void> _requestPermissions() async {
     PermissionStatus status;
-    if (Theme.of(context).platform == TargetPlatform.android && await Permission.audio.isGranted) {
+    if (Theme.of(context).platform == TargetPlatform.android &&
+        await Permission.audio.isGranted) {
       status = PermissionStatus.granted;
     } else {
       status = await Permission.storage.request();
@@ -107,7 +115,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("Permission Denied"),
-          content: const Text("This app needs storage permission to play music. Please grant the permission in settings."),
+          content: const Text(
+              "This app needs storage permission to play music. Please grant the permission in settings."),
           actions: <Widget>[
             TextButton(
               child: const Text("OK"),
@@ -137,7 +146,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
 
   void _playSong(SongModel song) async {
     try {
-      await audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(song.uri!)));
+      await audioPlayer.setAudioSource(
+          AudioSource.uri(Uri.parse(song.uri!)));
       audioPlayer.play();
       audioHandler.customAction(
         'setMediaItem',
@@ -182,28 +192,38 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
                         builder: (context, snapshot) {
                           final state = snapshot.data;
                           if (state?.currentSource == null) {
-                            return const Center(child: Text("No song playing"));
+                            return const Center(
+                                child: Text("No song playing"));
                           }
-                          final mediaItem = state!.currentSource!.tag as MediaItem;
+                          final mediaItem =
+                              state!.currentSource!.tag as MediaItem;
                           return Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               RotationTransition(
-                                turns: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-                                  parent: _controller,
-                                  curve: Curves.linear,
-                                )),
+                                turns: Tween(begin: 0.0, end: 1.0).animate(
+                                    CurvedAnimation(
+                                        parent: _controller,
+                                        curve: Curves.linear)),
                                 child: QueryArtworkWidget(
                                   id: int.parse(mediaItem.id),
                                   type: ArtworkType.AUDIO,
-                                  nullArtworkWidget: const Icon(Icons.music_note, size: 150),
+                                  nullArtworkWidget: const Icon(
+                                      Icons.music_note,
+                                      size: 150),
                                   size: 250,
-                                  artworkBorder: BorderRadius.circular(150),
+                                  artworkBorder:
+                                      BorderRadius.circular(150),
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              Text(mediaItem.title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                              Text(mediaItem.artist ?? "Unknown Artist", style: const TextStyle(fontSize: 18)),
+                              Text(mediaItem.title,
+                                  style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold)),
+                              Text(mediaItem.artist ?? "Unknown Artist",
+                                  style:
+                                      const TextStyle(fontSize: 18)),
                             ],
                           );
                         },
@@ -218,10 +238,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
                             leading: QueryArtworkWidget(
                               id: song.id,
                               type: ArtworkType.AUDIO,
-                              nullArtworkWidget: const Icon(Icons.music_note),
+                              nullArtworkWidget:
+                                  const Icon(Icons.music_note),
                             ),
                             title: Text(song.title),
-                            subtitle: Text(song.artist ?? "Unknown Artist"),
+                            subtitle:
+                                Text(song.artist ?? "Unknown Artist"),
                             onTap: () => _playSong(song),
                           );
                         },
@@ -230,7 +252,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
                   ],
                 ))
           : const Center(
-              child: Text("Please grant storage permission to play music."),
+              child: Text(
+                  "Please grant storage permission to play music."),
             ),
       floatingActionButton: StreamBuilder<PlayerState>(
         stream: audioPlayer.playerStateStream,
@@ -257,4 +280,3 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
     );
   }
 }
-
