@@ -20,9 +20,43 @@ jobs:
           flutter-version: '3.22.0'
           channel: 'stable'
 
-      - name: Fix Kotlin version
+      - name: Fix build.gradle
         run: |
-          find . -name "build.gradle" | xargs grep -l "kotlin_version" | xargs sed -i "s/ext.kotlin_version = '.*'/ext.kotlin_version = '1.9.0'/"
+          cat > android/app/build.gradle << 'EOF'
+          plugins {
+              id "com.android.application"
+              id "kotlin-android"
+              id "dev.flutter.flutter-gradle-plugin"
+          }
+          android {
+              namespace "com.example.aura_music_player"
+              compileSdkVersion 34
+              ndkVersion "25.1.8937393"
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = '17'
+              }
+              defaultConfig {
+                  applicationId "com.example.aura_music_player"
+                  minSdkVersion 21
+                  targetSdkVersion 34
+                  versionCode 1
+                  versionName "1.0"
+              }
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.debug
+                  }
+              }
+          }
+          flutter {
+              source '../..'
+          }
+          dependencies {}
+          EOF
 
       - name: Build APK
         run: |
