@@ -1,8 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences';
 import 'package:lottie/lottie.dart';
 import 'package:animations/animations.dart';
 import 'dart:math';
@@ -10,9 +8,6 @@ import 'dart:math';
 import 'package:aura_music_player/audio_handler.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
-
-// For overlay window (if needed, might require platform-specific setup)
-// import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,7 +71,6 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
       }
     });
     audioPlayer.positionStream.listen((position) {
-      // Simple beat sync: change color every 5 seconds of playback
       if (position.inSeconds % 5 == 0 && position.inSeconds != 0) {
         setState(() {
           _currentColorIndex = (_currentColorIndex + 1) % _backgroundColors.length;
@@ -88,8 +82,6 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
   }
 
   Future<void> _requestPermissions() async {
-    // For Android 13 and above, you can use Permission.audio
-    // For older Android versions, use Permission.storage
     PermissionStatus status;
     if (Theme.of(context).platform == TargetPlatform.android && await Permission.audio.isGranted) {
       status = PermissionStatus.granted;
@@ -103,10 +95,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
       });
       _loadSongs();
     } else if (status.isDenied) {
-      // Handle denied case
       _showPermissionDeniedDialog();
     } else if (status.isPermanentlyDenied) {
-      // Handle permanently denied case
       openAppSettings();
     }
   }
@@ -134,7 +124,11 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
 
   Future<void> _loadSongs() async {
     if (_hasPermission) {
-      List<SongModel> songs = await _audioQuery.querySongs(sortType: null, orderType: OrderType.ASC, uriType: UriType.EXTERNAL);
+      List<SongModel> songs = await _audioQuery.querySongs(
+        sortType: null,
+        orderType: OrderType.ASC_OR_SMALLER,
+        uriType: UriType.EXTERNAL,
+      );
       setState(() {
         _songs = songs;
       });
@@ -154,7 +148,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
             'title': song.title,
             'artist': song.artist,
             'duration': song.duration,
-            'artUri': song.albumArtwork != null ? Uri.file(song.albumArtwork!).toString() : null,
+            'artUri': null,
           },
         },
       );
