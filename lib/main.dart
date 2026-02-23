@@ -8,17 +8,19 @@ import 'package:animations/animations.dart';
 import 'dart:math';
 
 import 'package:aura_music_player/audio_handler.dart';
+import 'package:audio_service/audio_service.dart';
+import 'package:just_audio/just_audio.dart';
 
 // For overlay window (if needed, might require platform-specific setup)
 // import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  _audioPlayer = AudioPlayer();
-  _audioHandler = await AudioService.init(
+  audioPlayer = AudioPlayer();
+  audioHandler = await AudioService.init(
     builder: () => MyAudioHandler(),
-    config: AudioServiceConfig(
-      androidNotificationChannelId: 'com.example.auramusicplayer.channel.audio',
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.example.aura_music_player.channel.audio',
       androidNotificationChannelName: 'Aura Music Playback',
       androidNotificationOngoing: true,
       androidStopForegroundOnPause: true,
@@ -66,14 +68,14 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: const Duration(seconds: 10));
-    _audioPlayer.playerStateStream.map((state) => state.playing).distinct().listen((playing) {
+    audioPlayer.playerStateStream.map((state) => state.playing).distinct().listen((playing) {
       if (playing) {
         _controller.repeat();
       } else {
         _controller.stop();
       }
     });
-    _audioPlayer.positionStream.listen((position) {
+    audioPlayer.positionStream.listen((position) {
       // Simple beat sync: change color every 5 seconds of playback
       if (position.inSeconds % 5 == 0 && position.inSeconds != 0) {
         setState(() {
@@ -141,9 +143,9 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
 
   void _playSong(SongModel song) async {
     try {
-      await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(song.uri!)));
-      _audioPlayer.play();
-      _audioHandler.customAction(
+      await audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(song.uri!)));
+      audioPlayer.play();
+      audioHandler.customAction(
         'setMediaItem',
         {
           'mediaItem': {
@@ -164,7 +166,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
   @override
   void dispose() {
     _controller.dispose();
-    _audioPlayer.dispose();
+    audioPlayer.dispose();
     super.dispose();
   }
 
@@ -182,7 +184,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
                   children: [
                     Expanded(
                       child: StreamBuilder<SequenceState?>(
-                        stream: _audioPlayer.sequenceStateStream,
+                        stream: audioPlayer.sequenceStateStream,
                         builder: (context, snapshot) {
                           final state = snapshot.data;
                           if (state?.currentSource == null) {
@@ -237,7 +239,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
               child: Text("Please grant storage permission to play music."),
             ),
       floatingActionButton: StreamBuilder<PlayerState>(
-        stream: _audioPlayer.playerStateStream,
+        stream: audioPlayer.playerStateStream,
         builder: (context, snapshot) {
           final playerState = snapshot.data;
           final processingState = playerState?.processingState;
@@ -247,12 +249,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
             return const CircularProgressIndicator();
           } else if (playing != true) {
             return FloatingActionButton(
-              onPressed: _audioPlayer.play,
+              onPressed: audioPlayer.play,
               child: const Icon(Icons.play_arrow),
             );
           } else {
             return FloatingActionButton(
-              onPressed: _audioPlayer.pause,
+              onPressed: audioPlayer.pause,
               child: const Icon(Icons.pause),
             );
           }

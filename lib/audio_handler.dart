@@ -4,10 +4,10 @@ import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart'; // Required for MediaItem.artUri to be Uri.file
 
 // Define a global audio player instance
-late AudioPlayer _audioPlayer;
+late AudioPlayer audioPlayer;
 
 // Define a global AudioHandler for background playback
-late AudioHandler _audioHandler;
+late AudioHandler audioHandler;
 
 class MyAudioHandler extends BaseAudioHandler with SeekHandler {
   static final _item = MediaItem(
@@ -19,7 +19,7 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
   );
 
   MyAudioHandler() {
-    _audioPlayer.playerStateStream.listen((playerState) {
+    audioPlayer.playerStateStream.listen((playerState) {
       final playing = playerState.playing;
       playbackState.add(playbackState.value.copyWith(
         controls: [
@@ -36,13 +36,13 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
         androidCompactActionIndices: const [0, 1, 2],
         processingState: _getAudioProcessingState(playerState.processingState),
         playing: playing,
-        updatePosition: _audioPlayer.position,
-        bufferedPosition: _audioPlayer.bufferedPosition,
-        speed: _audioPlayer.speed,
-        queueIndex: _audioPlayer.currentIndex,
+        updatePosition: audioPlayer.position,
+        bufferedPosition: audioPlayer.bufferedPosition,
+        speed: audioPlayer.speed,
+        queueIndex: audioPlayer.currentIndex,
       ));
     });
-    _audioPlayer.sequenceStateStream.listen((sequenceState) {
+    audioPlayer.sequenceStateStream.listen((sequenceState) {
       if (sequenceState != null) {
         mediaItem.add(sequenceState.currentSource?.tag as MediaItem?);
       }
@@ -67,23 +67,23 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   @override
-  Future<void> play() => _audioPlayer.play();
+  Future<void> play() => audioPlayer.play();
 
   @override
-  Future<void> pause() => _audioPlayer.pause();
+  Future<void> pause() => audioPlayer.pause();
 
   @override
   Future<void> stop() async {
-    await _audioPlayer.stop();
+    await audioPlayer.stop();
     playbackState.add(playbackState.value.copyWith(processingState: AudioProcessingState.idle, playing: false));
     return super.stop();
   }
 
   @override
-  Future<void> seek(Duration position) => _audioPlayer.seek(position);
+  Future<void> seek(Duration position) => audioPlayer.seek(position);
 
   @override
-  Future<void> setSpeed(double speed) => _audioPlayer.setSpeed(speed);
+  Future<void> setSpeed(double speed) => audioPlayer.setSpeed(speed);
 
   @override
   Future<void> customAction(String name, [Map<String, dynamic>? extras]) async {
