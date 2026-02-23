@@ -257,3 +257,4 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with SingleTicker
     );
   }
 }
+
