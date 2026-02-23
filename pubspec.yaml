@@ -1,40 +1,27 @@
-name: Build APK
+name: aura_music_player
+description: A new Flutter project.
+publish_to: 'none'
+version: 1.0.0+1
 
-on:
-  push:
-    branches: [ main ]
+environment:
+  sdk: '^3.4.0'
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  just_audio: ^0.9.36
+  audio_service: ^0.18.12
+  on_audio_query: ^2.9.0
+  permission_handler: ^11.3.1
+  shared_preferences: ^2.2.2
+  lottie: ^3.1.0
+  animations: ^2.0.11
 
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
 
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.22.0'
-          channel: 'stable'
-
-      - name: Fix MainActivity
-        run: |
-          cat > android/app/src/main/kotlin/com/example/aura_music_player/MainActivity.kt << 'EOF'
-          package com.example.aura_music_player
-          import io.flutter.embedding.android.FlutterActivity
-          class MainActivity: FlutterActivity() {
-          }
-          EOF
-
-      - name: Build APK
-        run: |
-          flutter pub get
-          flutter build apk --debug
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: aura-music-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+flutter:
+  uses-material-design: true
